@@ -3,7 +3,10 @@ const fs = require("fs");
 const users = require("./users");
 const tutor = require("./tutor");
 const courses = require("./courses");
-const { log } = require("console");
+const path = require("path");
+const currentDir = path.join(__dirname);
+
+let currentUser;
 
 class Students {
   constructor(email, password) {
@@ -18,10 +21,16 @@ class Students {
 
   reviewsCart = [];
 
-  welcomeMessage() {}
-  payment() {}
+  welcomeMessage() {
+    throw new Error("Please implement this method in the inherited classes");
+  }
+  payment() {
+    throw new Error("Please implement this method in the inherited classes");
+  }
 
-  Login() {}
+  Login() {
+    throw new Error("Please implement this method in the inherited classes");
+  }
 }
 
 class Tutor extends Students {
@@ -34,6 +43,7 @@ class Tutor extends Students {
   }
   // registering the tutor
   static tutorRegister() {
+    console.log(this);
     this.fullName = prompt("What is your full name? ");
     this.email = prompt("What is your email address? ");
     this.password = prompt("Please input your password? ");
@@ -41,6 +51,7 @@ class Tutor extends Students {
       "Which course are you teaching? Backend, Frontend, web3 or product_design "
     );
     let confirmed = prompt("Are you done? y/n");
+    console.log(this);
     if (confirmed == "y") {
       // pushing tutor's details to tutor.json file
       tutor.push({
@@ -50,27 +61,23 @@ class Tutor extends Students {
         tutorCourse: this.track,
       });
       // storing it in tutor.json file
-      fs.writeFile(
-        "./teachable_lms/tutor.json",
-        JSON.stringify(tutor),
-        (err) => {
-          if (err) throw err;
-          console.log(
-            `Hello ${this.fullName}, your registration as a tutor was successful.`
-          );
-          const whatToDo = prompt(
-            `What do you want to do? [1 => Upload Courses], [2 => View Reviews of Students] 1/2 `
-          );
-          // checking what the tutor wants to do
-          if (whatToDo == "1") {
-            Tutor.uploadCourses();
-          } else if (whatToDo == "2") {
-            console.log("This feature is coming soon");
-          } else {
-            console.log("Input error");
-          }
+      fs.writeFile(currentDir + "/tutor.json", JSON.stringify(tutor), (err) => {
+        if (err) throw err;
+        console.log(
+          `Hello ${this.fullName}, your registration as a tutor was successful.`
+        );
+        const whatToDo = prompt(
+          `What do you want to do? [1 => Upload Courses], [2 => View Reviews of Students] 1/2 `
+        );
+        // checking what the tutor wants to do
+        if (whatToDo == "1") {
+          Tutor.uploadCourses();
+        } else if (whatToDo == "2") {
+          console.log("This feature is coming soon");
+        } else {
+          console.log("Input error");
         }
-      );
+      });
     } else {
       console.log("Sorry!");
     }
@@ -81,7 +88,7 @@ class Tutor extends Students {
     const courseTrack = prompt("Under which track? ");
     const priceOfCourse = prompt("How much is the course");
     const newPriceOfCourse = parseInt(priceOfCourse);
-    const done = prompt("Is that all? y/n");
+    const done = prompt("Is that all? y/n ");
     if (done == "y") {
       courses.push({
         courseName: nameOfCourse,
@@ -89,7 +96,7 @@ class Tutor extends Students {
         coursePrice: newPriceOfCourse,
       });
       fs.writeFile(
-        "./teachable_lms/courses.json",
+        currentDir + "/courses.json",
         JSON.stringify(courses),
         (err) => {
           if (err) throw err;
@@ -101,8 +108,6 @@ class Tutor extends Students {
       console.log("Upload failed");
     }
   }
-
-  
 }
 
 const teach = new Tutor();
@@ -118,17 +123,17 @@ class Lms extends Students {
     console.log(courses);
     const yourChoice = prompt("Input your selection based on the courseName: ");
     // storing details of selected courses to users.json file
-    courses.forEach((element) => {
-      if (yourChoice == element.courseName) {
-        const addToCart = prompt("Do you want to add to cart? y/n");
+    courses.forEach((course) => {
+      if (yourChoice == course.courseName) {
+        const addToCart = prompt("Do you want to add to cart? y/n ");
         if (addToCart == "y") {
           users.forEach((el, id) => {
-            if (el.fullName == users[0].fullName) {
-              users[id] = { ...el, courseChosen: [courses[0]] };
+            if (el.fullName == currentUser) {
+              users[id] = { ...el, courseChosen: [course] };
             }
           });
           fs.writeFile(
-            "./teachable_lms/users.json",
+            currentDir + "/users.json",
             JSON.stringify(users),
             (err) => {
               if (err) throw err;
@@ -172,7 +177,7 @@ class NewStudents extends Students {
     );
 
     const userInput = prompt(
-      "Do you want to: 1 => Login, 2 => Register, 3 => View FAQ, 4 => Contact Support "
+      "Do you want to: 1 => Login, 2 => Register, 3 => View FAQ, 4 => Contact Support 1/2/3/4 "
     );
     if (userInput.length > 0) {
       this.userInputChoice(userInput);
@@ -201,13 +206,14 @@ class NewStudents extends Students {
 
   Register() {
     const typeOfUser = prompt(
-      "Are you registering as a [1 => Student] or [2 => Tutor] "
+      "Are you registering as a [1 => Student] or [2 => Tutor] 1/2 "
     );
     if (typeOfUser === "1") {
       this.firstName = prompt("What is your first name? ");
       this.lastName = prompt("What is your last name? ");
       this.email = prompt("What is your email address? ");
       this.password = prompt("What is your password? ");
+      currentUser = this.firstName + " " + this.lastName;
       // pushing to users.json file
       users.push({
         fullName: this.firstName + " " + this.lastName,
@@ -216,26 +222,22 @@ class NewStudents extends Students {
         courseChosen: [],
       });
       // storing students data in the users.json file
-      fs.writeFile(
-        "./teachable_lms/users.json",
-        JSON.stringify(users),
-        (err) => {
-          if (err) throw err;
-          console.log(`${this.firstName}, your registration was successful`);
-          const whereTo = prompt(
-            "What do you want to do? \n [1 => Courses & Payment], [2 => FAQ], [3 => Contact support] "
-          );
-          if (whereTo === "1") {
-            admin.Description();
-          } else if (whereTo === "2") {
-            admin.Faq();
-          } else if (whereTo === "3") {
-            admin.Support();
-          } else {
-            console.log("Thank you!");
-          }
+      fs.writeFile(currentDir + "/users.json", JSON.stringify(users), (err) => {
+        if (err) throw err;
+        console.log(`${this.firstName}, your registration was successful`);
+        const whereTo = prompt(
+          "What do you want to do? \n [1 => Courses & Payment], [2 => FAQ], [3 => Contact support] 1/2/3 "
+        );
+        if (whereTo === "1") {
+          admin.Description();
+        } else if (whereTo === "2") {
+          admin.Faq();
+        } else if (whereTo === "3") {
+          admin.Support();
+        } else {
+          console.log("Thank you!");
         }
-      );
+      });
     } else if (typeOfUser === "2") {
       Tutor.tutorRegister();
     } else {
@@ -244,7 +246,9 @@ class NewStudents extends Students {
   }
 
   Login() {
-    const registeredFullName = prompt("Enter registered name(i.e your first name and last name while registering): ");
+    const registeredFullName = prompt(
+      "Enter registered name(i.e your first name and last name while registering with space in between the first and the last name): "
+    );
     const registerdPassword = prompt("Enter registered password: ");
 
     users.forEach((ele, id) => {
@@ -257,32 +261,28 @@ class NewStudents extends Students {
     });
     if (this.loggedIn.length > 0) {
       console.log("You are logged in");
-      fs.writeFile(
-        "./teachable_lms/users.json",
-        JSON.stringify(users),
-        (err) => {
-          if (err) throw err;
-          const whereTo = prompt(
-            "What do you want to do? \n [1 => Courses & Payment], [2 => FAQ], [3 => Contact support] "
-          );
-          if (whereTo === "1") {
-            admin.Description();
-          } else if (whereTo === "2") {
-            admin.Faq();
-          } else if (whereTo === "3") {
-            admin.Support();
-          } else {
-            console.log("Incorrect option");
-          }
+      fs.writeFile(currentDir + "/users.json", JSON.stringify(users), (err) => {
+        if (err) throw err;
+        const whereTo = prompt(
+          "What do you want to do? \n [1 => Courses & Payment], [2 => FAQ], [3 => Contact support] 1/2/3 "
+        );
+        if (whereTo === "1") {
+          admin.Description();
+        } else if (whereTo === "2") {
+          admin.Faq();
+        } else if (whereTo === "3") {
+          admin.Support();
+        } else {
+          console.log("Incorrect option");
         }
-      );
+      });
     } else {
       console.log("Incorrect details");
     }
   }
 
   payment() {
-    const payChoice = prompt("Do you want to pay? y/n");
+    const payChoice = prompt("Do you want to pay? y/n ");
     if (payChoice == "y") {
       console.log(`Your payment was successful. You can now start learning!`);
       news.learning();
@@ -292,8 +292,10 @@ class NewStudents extends Students {
   }
 
   learning() {
-    const whatToDo = prompt("Do you want to start watching the learning videos? y/n ");
-    if (whatToDo == 'y') {
+    const whatToDo = prompt(
+      "Do you want to start watching the learning videos? y/n "
+    );
+    if (whatToDo == "y") {
       console.log("your video is playing");
       news.reviews();
     } else {
@@ -303,16 +305,15 @@ class NewStudents extends Students {
 
   reviews() {
     const reviews = prompt("Do you want to leave a review? y/n ");
-    if (reviews == 'y') {
+    if (reviews == "y") {
       const leaveReviews = prompt("Enter your reviews here: ");
       this.reviewsCart.push(leaveReviews);
+      console.log("Thank you and hope you enjoy learning");
     } else {
       console.log("Thanks for watching.");
     }
   }
 }
-
-
 
 const news = new NewStudents();
 news.welcomeMessage();

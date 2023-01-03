@@ -1,1 +1,26 @@
-[{"fullName":"ada rgt","emailAddress":"yui","mainPassword":"67","courseChosen":[{"courseName":"JavaScript","courseTracks":"Backend","coursePrice":5000}]}]
+[
+    {
+        "fullName": "Ada Chi",
+        "emailAddress": "ada@gmal.com",
+        "mainPassword": "jhyu",
+        "courseChosen": [
+            {
+                "courseName": "Java",
+                "courseTracks": "Backend",
+                "coursePrice": 4000
+            }
+        ]
+    },
+    {
+        "fullName": "ert tyu",
+        "emailAddress": "adrt@g",
+        "mainPassword": "345",
+        "courseChosen": [
+            {
+                "courseName": "python",
+                "courseTracks": "Backend",
+                "coursePrice": 5000
+            }
+        ]
+    }
+]
